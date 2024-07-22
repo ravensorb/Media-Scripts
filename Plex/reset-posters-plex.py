@@ -62,7 +62,9 @@ OVERRIDE_OVERLAY_STATUS = booler(os.getenv("OVERRIDE_OVERLAY_STATUS"))
 REMOVE_LABELS = booler(os.getenv("REMOVE_LABELS"))
 RESET_SEASONS = booler(os.getenv("RESET_SEASONS"))
 RESET_EPISODES = booler(os.getenv("RESET_EPISODES"))
+REFRESH_METADATA = booler(os.getenv("REFRESH_METADATA"))
 
+MAX_RANDOM_DELAY = 4
 DELAY = 0
 try:
     DELAY = int(os.getenv("DELAY"))
@@ -92,7 +94,7 @@ if LIBRARY_NAMES == 'ALL_LIBRARIES':
 def sleep_for_a_while():
     sleeptime = DELAY
     if DELAY == 99:
-        sleeptime = random.uniform(0, 1)
+        sleeptime = random.uniform(0, MAX_RANDOM_DELAY)
     
     time.sleep(sleeptime)
 
@@ -118,7 +120,7 @@ def pick_poster(poster_list, fallback):
 
 def apply_poster(item, item_poster):
     if item_poster is not None:
-        blogger(f"-> setting {item.type} poster : {get_log_title(item)} to {item_poster.thumb}", 'info', 'a', bar)
+        blogger(f"-> setting {item.type} poster: {get_log_title(item)} to {item_poster.thumb}", 'info', 'a', bar)
         if not DRY_RUN:
             item.setPoster(item_poster)
     else:
@@ -188,6 +190,10 @@ for lib in LIB_ARRAY:
                         local_file = None
 
                         blogger(f"-> getting posters: {item_title}", 'info', 'a', bar)
+
+                        if REFRESH_METADATA: 
+                            item.refresh()
+                            
                         posters = item.posters()
                         blogger(f"-> Plex has {len(posters)} posters for: {item_title}", 'info', 'a', bar)
 
@@ -215,8 +221,12 @@ for lib in LIB_ARRAY:
                                         item_title = get_log_title(s)
                                         # reset artwork
                                         blogger(f"-> getting season posters: {item_title}", 'info', 'a', bar)
+
+                                        if REFRESH_METADATA:
+                                            s.refresh()
+                                            
                                         posters = s.posters()
-                                        blogger(f"-> Plex has {len(posters)} posters for: {item_title}", 'info', 'a', bar)
+                                        blogger(f"-> Plex has {len(posters)} posters for seson: {item_title}", 'info', 'a', bar)
 
                                         seasonPoster = pick_poster(posters, showPoster)
                                         
@@ -230,15 +240,22 @@ for lib in LIB_ARRAY:
                                     if RESET_EPISODES:
                                         # get episodes
                                         episodes = s.episodes()
+                                        
+                                        blogger(f"-> Plex has {len(episodes)} episodes for: {item_title}", 'info', 'a', bar)
+                                        
                                         # loop over all
                                         for e in episodes:
                                             if id_array.count(f"{e.ratingKey}") == 0:
                                                 item_title = get_log_title(e)
                                                 # reset artwork
                                                 blogger(f"-> getting episode posters: {item_title}", 'info', 'a', bar)
+
+                                                if REFRESH_METADATA:
+                                                    e.refresh()
+
                                                 posters = e.posters()
 
-                                                blogger(f"-> Plex has {len(posters)} posters for: {item_title}", 'info', 'a', bar)
+                                                blogger(f"-> Plex has {len(posters)} posters for episode: {item_title}", 'info', 'a', bar)
 
                                                 episodePoster = pick_poster(posters, None)
 
