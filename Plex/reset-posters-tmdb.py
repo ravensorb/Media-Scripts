@@ -68,6 +68,7 @@ DRY_RUN = booler(os.getenv("DRY_RUN"))
 FLUSH_STATUS_AT_START = booler(os.getenv("FLUSH_STATUS_AT_START"))
 OVERRIDE_OVERLAY_STATUS = booler(os.getenv("OVERRIDE_OVERLAY_STATUS"))
 
+MAX_RANDOM_DELAY = 4
 DELAY = 0
 try:
     DELAY = int(os.getenv("DELAY"))
@@ -128,7 +129,7 @@ if LIBRARY_NAMES == 'ALL_LIBRARIES':
 def sleep_for_a_while():
     sleeptime = DELAY
     if DELAY == 99:
-        sleeptime = random.uniform(0, 1)
+        sleeptime = random.uniform(0, MAX_RANDOM_DELAY)
     
     time.sleep(sleeptime)
 
